@@ -24,9 +24,6 @@ const discordToken = fs.readFileSync("./info/discordToken.txt", "utf8").replace(
 // Read in IDs from the ID file
 const ids = JSON.parse(fs.readFileSync('./info/ids.json', 'utf8'));
 
-// Read in a given name for the bot
-const botName = fs.readFileSync("./info/botName.txt", "utf8").replace("\n", "");
-
 // Spambot detection
 let spambots = JSON.parse(fs.readFileSync("./info/spam.json", "utf8"));
 
@@ -57,12 +54,6 @@ TeddyBot.login(discordToken).catch(function (reason) {
 TeddyBot.on('ready', async () => {
 	mainGuild = TeddyBot.guilds.cache.get(ids.server);
 	misc.mainGuild = mainGuild;
-	await TeddyBot.user.setUsername(botName);
-	try{
-		await TeddyBot.user.setAvatar("./img/avatar.png");
-	} catch (e){
-		await TeddyBot.user.setAvatar("./img/avatar-default.png");
-	}
 	TeddyBot.setMaxListeners(0); // Ensure it responds to everything regardless of how busy the server gets
 	await TeddyBot.user.setActivity("Type !help for commands");
 	console.log(`${botName} is ready`);
