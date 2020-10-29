@@ -56,7 +56,7 @@ TeddyBot.on('ready', async () => {
 	misc.mainGuild = mainGuild;
 	TeddyBot.setMaxListeners(0); // Ensure it responds to everything regardless of how busy the server gets
 	await TeddyBot.user.setActivity("Type !help for commands");
-	console.log(`${botName} is ready`);
+	console.log(`BacoBot is ready`);
 });
 
 // Executed upon a message being sent to any channel the bot can look at
