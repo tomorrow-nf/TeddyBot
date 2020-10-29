@@ -27,10 +27,10 @@ function delay(t) {
   });
 }
 
-function memberIsMod(message) {
+function memberIsMod(member) {
   let ret = false;
   for (let i = 0; i < modRoles.length; i++) {
-    ret = ret || memberHasRole(message.member, modRoles[i]);
+    ret = ret || memberHasRole(member, modRoles[i]);
   }
   return ret;
 }

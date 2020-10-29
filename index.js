@@ -75,8 +75,8 @@ TeddyBot.on('message', async message => {
 		
 		let args = message.content.toLowerCase().split(" ");
 
-		//Mod specific handlers:
-		if (misc.memberIsMod(message)) {
+		// Mod specific handlers:
+		if (misc.memberIsMod(message.member)) {
 			await commands.modCommands(message, args);
 			await blacklist.handleBlacklistCommands(message, args);
 		}
@@ -90,7 +90,7 @@ TeddyBot.on('message', async message => {
 		}
 		
 		// Check for responses in an image-only channel
-		if (message.channel == ids.galleryChannel && !misc.memberIsMod(message)) {
+		if (message.channel == ids.galleryChannel && !misc.memberIsMod(message.member)) {
 		    console.log('New message posted in gallery');
 		    if (!(message.attachments.size > 0 && message.attachments.every(misc.attachIsImage))){
 		      message.delete();
@@ -98,7 +98,7 @@ TeddyBot.on('message', async message => {
 		    }
 	  	}
 
-		//Handle blacklist removals/warnings
+		// Handle blacklist removals/warnings
 		let censored = await blacklist.handleBlacklist(message, TeddyBot.user.tag);
 		if (!censored) {
 			await blacklist.handleBlacklistPotential(message, TeddyBot.user.tag);
