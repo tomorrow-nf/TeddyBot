@@ -50,12 +50,12 @@ function configure() {
 		console.log("./info/botName.txt created and filled with example name.");
 	}
 
-	// if (!fs.existsSync("./img/avatar.png")) {
-	// 	didConfigure = true;		
-	// 	console.log("Bot avatar file not found, will default to TeddyBot. Update this file with your desired bot avatar png image.");
-	// 	fs.copyFile("./img/avatar-default.png", "./img/avatar.png", null);
-	// 	console.log("./img/avatar.png created and filled with example avatar.");
-	// }
+	if (!fs.existsSync("./img/avatar.png")) {
+		didConfigure = true;		
+		console.log("Bot avatar file not found, will default to TeddyBot. Update this file with your desired bot avatar png image.");
+		fs.copyFile("./img/avatar-default.png", "./img/avatar.png", function (err, data) {});
+		console.log("./img/avatar.png created and filled with example avatar.");
+	}
 
 	if (!fs.existsSync("./info/ids.json")) {
 		didConfigure = true;
@@ -66,7 +66,7 @@ function configure() {
 			moderationChannel: "123456",
 			introductionsChannel: "0",
 			galleryChannel: "0",
-			memesChannel, "0",
+			memesChannel: "0",
 			botlogChannel: "0",
 			rolesChannel: "123456",
 		};

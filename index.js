@@ -1,7 +1,7 @@
 /*
 	index.js
-	Basic setup and core commands run on various actions (bot startup, messages, reactions
-)*/
+	Basic setup and core commands run on various actions such as bot startup, messages, reactions, etc.
+*/
 
 // Node imports
 const fs = require("fs");
@@ -21,11 +21,11 @@ const emojiCharacters = require('./src/emojiCharacters.js');
 // Read in bot's Discord token
 const discordToken = fs.readFileSync("./info/discordToken.txt", "utf8").replace("\n", "");
 
-// Read in a given name and avatar for the bot
-const botName = fs.readFileSync("./info/botName.txt", "utf8").replace("\n", "");
-
 // Read in IDs from the ID file
 const ids = JSON.parse(fs.readFileSync('./info/ids.json', 'utf8'));
+
+// Read in a given name for the bot
+const botName = fs.readFileSync("./info/botName.txt", "utf8").replace("\n", "");
 
 // Spambot detection
 let spambots = JSON.parse(fs.readFileSync("./info/spam.json", "utf8"));
@@ -57,99 +57,119 @@ TeddyBot.login(discordToken).catch(function (reason) {
 TeddyBot.on('ready', async () => {
 	mainGuild = TeddyBot.guilds.cache.get(ids.server);
 	misc.mainGuild = mainGuild;
-	TeddyBot.setMaxListeners(0); // Ensure it responds to everything regardless of how busy the server gets
 	await TeddyBot.user.setUsername(botName);
-	//await TeddyBot.user.setAvatar("./img/avatar.png");
+	try{
+		await TeddyBot.user.setAvatar("./img/avatar.png");
+	} catch (e){
+		await TeddyBot.user.setAvatar("./img/avatar-default.png");
+	}
+	TeddyBot.setMaxListeners(0); // Ensure it responds to everything regardless of how busy the server gets
 	await TeddyBot.user.setActivity("Type !help for commands");
 	console.log(`${botName} is ready`);
 });
 
 // Executed upon a message being sent to any channel the bot can look at
 TeddyBot.on('message', async message => {
-	if (message.author.bot) return; //Ignore the bot's own messages
-	
-	let args = message.content.toLowerCase().split(" ");
+	try{
+		if (message.author.bot) return; //Ignore the bot's own messages
+		
+		let args = message.content.toLowerCase().split(" ");
 
-	//Mod specific handlers:
-	if (misc.memberIsMod(message)) {
-		await commands.modCommands(message, args);
-		await blacklist.handleBlacklistCommands(message, args);
-	}
+		//Mod specific handlers:
+		if (misc.memberIsMod(message)) {
+			await commands.modCommands(message, args);
+			await blacklist.handleBlacklistCommands(message, args);
+		}
 
-	// Check all messages for userCommands
-	await commands.userCommands(message, args);
+		// Check all messages for userCommands
+		await commands.userCommands(message, args);
 
-	// If someone asks the bot a question, reply with a canned response
-	if (message.mentions.has(TeddyBot.user) && message.content[message.content.length - 1] == "?") {
-		await misc.botReply(message, TeddyBot);
-	}
-	
-	// Check for responses in an image-only channel
-	if (message.channel == ids.galleryChannel) {
-	    console.log('New message posted in gallery');
-	    if (!(message.attachments.size > 0 && message.attachments.every(misc.attachIsImage))){
-	      message.delete();
-	      console.log(`Deleted non-image post from #gallery from ${message.author}`);
-	    }
-  	}
+		// If someone asks the bot a question, reply with a canned response
+		if (message.mentions.has(TeddyBot.user) && message.content[message.content.length - 1] == "?") {
+			await misc.botReply(message, TeddyBot);
+		}
+		
+		// Check for responses in an image-only channel
+		if (message.channel == ids.galleryChannel && !misc.memberIsMod(message)) {
+		    console.log('New message posted in gallery');
+		    if (!(message.attachments.size > 0 && message.attachments.every(misc.attachIsImage))){
+		      message.delete();
+		      console.log(`Deleted non-image post from #gallery from ${message.author}`);
+		    }
+	  	}
 
-	//Handle blacklist removals/warnings
-	let censored = await blacklist.handleBlacklist(message, TeddyBot.user.tag);
-	if (!censored) {
-		await blacklist.handleBlacklistPotential(message, TeddyBot.user.tag);
+		//Handle blacklist removals/warnings
+		let censored = await blacklist.handleBlacklist(message, TeddyBot.user.tag);
+		if (!censored) {
+			await blacklist.handleBlacklistPotential(message, TeddyBot.user.tag);
+		}
+	} catch (e){
+		console.error(e);
 	}
 });
 
 // Executed upon a reaction being added to a message in the cache
 TeddyBot.on("messageReactionAdd", async (messageReaction, user) => {
-	await reaction.handleReactionAdd(messageReaction, user, TeddyBot);
+	try {
+		await reaction.handleReactionAdd(messageReaction, user, TeddyBot);
+	} catch (e){
+		console.error(e);
+	}
 });
 
 //Executed upon a reaction being removed from a message in the cache
 TeddyBot.on("messageReactionRemove", async (messageReaction, user) => {
-	await reaction.handleReactionRemove(messageReaction, user, TeddyBot);
+	try {
+		await reaction.handleReactionRemove(messageReaction, user, TeddyBot);
+	} catch (e){
+		console.error(e);
+	}
 });
 
 
 // Executed upon a new user joining the server
 TeddyBot.on('guildMemberAdd', async(member) => {
-	console.log("New member joined: " + member.displayName);
-	let introductionsChannel = TeddyBot.channels.cache.get(ids.introductionsChannel);
-	let rulesChannel = TeddyBot.channels.cache.get(ids.rulesChannel);
-	var ran = Math.floor(Math.random() * introMessages.length);
+	try {
+		console.log("New member joined: " + member.displayName);
+		let introductionsChannel = TeddyBot.channels.cache.get(ids.introductionsChannel);
+		let rulesChannel = TeddyBot.channels.cache.get(ids.rulesChannel);
+		var ran = Math.floor(Math.random() * introMessages.length);
 
-	//Handle spambots and send intro messages
-	var spam = false;
-	for (let i = 0; i < spambots.length && !spam; i++){
-		if (member.displayName.toLowerCase().includes(spambots[i])){
-			console.log(`Kicking a spambot: ${member}`);
-			member.send("Spambots are not welcome in this server. If you believe this was in error, remove the URL or spam phrase from your username before rejoining.");
-			spam = true;
-			await member.kick("Spambot eliminated");
-		}
-	}
-	
-	if (!spam){
-		if(introductionsChannel != 0){
-			// Send a custom intro if provided, otherwise send a Welcome. In both cases, let them know they'll get a member
-			// role soon if the server uses these
-			if (introMessages.length > 0){
-				await introductionsChannel.send(`${introMessages[ran]} ${member} ! Be sure to read through ${rulesChannel}.`);
-			} else {
-				await introductionsChannel.send(`Welcome ${member} ! Be sure to read through ${rulesChannel}.`);
-			}
-			if (memberRoles.length > 0){
-				await introductionsChannel.send("You'll be granted a member role very soon to access the rest of the server.");
+		//Handle spambots and send intro messages
+		var spam = false;
+		for (let i = 0; i < spambots.length && !spam; i++){
+			if (member.displayName.toLowerCase().includes(spambots[i])){
+				console.log(`Kicking a spambot: ${member}`);
+				member.send("Spambots are not welcome in this server. If you believe this was in error, remove the URL or spam phrase from your username before rejoining.");
+				spam = true;
+				await member.kick("Spambot eliminated");
 			}
 		}
-		if(memberRoles.length > 0){
-			setTimeout(() => {
-				for (let i = 0; i < memberRoles.length; i++) {
-					member.roles.add(member.guild.roles.cache.find(roles => roles.id === memberRoles[i]));
-					console.log(`Assigned ${member} a member role`);
+		
+		if (!spam){
+			if(introductionsChannel != 0){
+				// Send a custom intro if provided, otherwise send a Welcome. In both cases, let them know they'll get a member
+				// role soon if the server uses these
+				if (introMessages.length > 0){
+					await introductionsChannel.send(`${introMessages[ran]} ${member} ! Be sure to read through ${rulesChannel}.`);
+				} else {
+					await introductionsChannel.send(`Welcome ${member} ! Be sure to read through ${rulesChannel}.`);
 				}
-			}, 60000) // 1 minute waiting period
+				if (memberRoles.length > 0){
+					await introductionsChannel.send("You'll be granted a member role very soon to access the rest of the server.");
+				}
+			}
+			if(memberRoles.length > 0){
+				setTimeout(() => {
+					for (let i = 0; i < memberRoles.length; i++) {
+						member.roles.add(member.guild.roles.cache.find(roles => roles.id === memberRoles[i]));
+						console.log(`Assigned ${member.displayName} a member role`);
+					}
+				}, 60000) // 1 minute waiting period
+			}
 		}
+	} catch (e){
+		console.error(e);
 	}
 });
 

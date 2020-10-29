@@ -1,0 +1,22 @@
+{
+  "name": "teddybot",
+  "version": "1.0.0",
+  "description": "A basic Discord bot providing basic quality of life improvements to any server.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/tomorrow-nf/TeddyBot.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/tomorrow-nf/TeddyBot/issues"
+  },
+  "homepage": "https://github.com/tomorrow-nf/TeddyBot#readme",
+  "dependencies": {
+    "discord.js": "^12.4.1"
+  }
+}

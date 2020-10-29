@@ -27,9 +27,6 @@ helpString[0] += '`!helpcount` - Show number of uses each user command has recie
 helpString[0] += '`!helphidden` - Display hidden user commands.\n';
 helpString[0] += '`!kill` - End this bot instance. Bot should automatically restart.\n';
 helpString[0] += '`!say CHANNEL MESSAGE` - Send any message to any channel.\n';
-if (ids.memesChannel != '0'){
-  helpString[0] += '`!meme - Post a random meme.\n';
-}
 
 helpString[1] += '`!emotelist EMOTES` - The list of emotes to add to a message when reacting with a setup react.\n';
 helpString[1] += '`!blacklist` - List all words currently on the blacklist.\n';
@@ -333,8 +330,8 @@ async function modCommands(message, args) {
       }
     }
   } else if (args[0] === "!meme"){
-    if (ids.memeChannel != '0' &&  message.channel == ids.memeChannel){
-      fs.readdir('./img/meme/', (err, files) => {
+    if (misc.ids.memesChannel != '0' &&  message.channel.id == misc.ids.memesChannel){
+      fs.readdir('./img/memes/', (err, files) => {
         var num;
         if (args.length === 2){
           num = args[1];
@@ -344,14 +341,11 @@ async function modCommands(message, args) {
         console.log("Fetching meme #" + num + ", Number of files: " + files.length);
         return message.channel.send({
           files: [{
-            attachment: "./img/meme/meme" + num +".png",
+            attachment: "./img/memes/meme" + num +".png",
             name: "meme" + num +".png"
           }]
         });
       });
-      if (err.code === 'ENOENT'){
-        console.log("File not found");
-      }
     }
   }
 }
@@ -364,9 +358,10 @@ async function userCommands(message, args) {
         userHelpString += '`' + userCommandList[i].command + '` -  ' + userCommandList[i].description + '\n';
       }
     }
-    return await message.channel.send(
-      "Here's a list of commands for all users:\n" + userHelpString
-    );
+    if (misc.ids.memesChannel != '0'){
+      userHelpString += '`!meme` - Post a random meme (only useable in the memes channel).\n';
+    }
+    return await message.channel.send(`Here's a list of commands for all users:\n${userHelpString}`);
 
   } else if (args[0].startsWith(commandPrefix)) {
     for (let i = 0; i < userCommandList.length; i++) {

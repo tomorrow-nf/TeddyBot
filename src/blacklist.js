@@ -2,9 +2,6 @@
     blacklist.js
 
     Handles adding/removing to/from a given blacklist, removing messages containing those words and/or notifying mods about messages that may or may not contain them.
-
-    Written by Adam "WaveParadigm" Gincel for the Icons: Combat Arena Discord Server.	
-	Modified by Tyler "NFreak" Morrow for the Hit Box Discord server.
 */
 
 const fs = require("fs");
@@ -68,10 +65,10 @@ function censorshipInfoAddWarning(user, word) {
 }
 
 async function blacklistAlertMods(message, violatingWord, warning) {
-	let violationChannel = message.guild.channels.find(channel => channel.name === "bot-log");
+	let violationChannel = message.guild.channels.cache.find(channel => channel.id === misc.ids.botlogChannel);
 	let bars = "----------------------\n";
 	if (!warning)
-		return await violationChannel.send(bars + "Removed message with violation (`" + violatingWord + "`) in #" + message.channel.name + " posted by `@" + message.author.tag + "`:\n`" + message.content + "`");
+		return await violationChannel.send(`${bars} Removed message with violation (\`${violatingWord}\`) in ${message.channel} posted by ${message.author} :\n \`${message.content}\``);
 	else {
 		return await violationChannel.send(bars + "Potential violation (`" + violatingWord + "`) in #" + message.channel.name + " posted by `@" + message.author.tag + "`:\n`" + message.content + "`");
 	}
@@ -97,7 +94,6 @@ async function handleBlacklist(message, DiscordBotTag) {
 			let warning = await message.author.send("Please refrain from using language like '" + censoredWord + "' on the Hit Box server.\n\n`" + message.content + "`");
 		} catch (e) {
 			let warning = await message.channel.send("<@" + message.author.id + ">, please refrain from using that language on this server.");
-			warning.delete(2250);
 		} 
 		censorshipInfoAddViolation(message.author, censoredWord);
 		await blacklistAlertMods(message, censoredWord, false);

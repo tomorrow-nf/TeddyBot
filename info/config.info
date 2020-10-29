@@ -7,7 +7,9 @@ blacklistWarningSpecialCases.json
 censorshipInfo.json
 discordToken.txt
 ids.json
-recent-news.txt
 roleEmoji.json
 userCommands.json
-voicechannels.json
+introMessages.json
+memberRoles.json
+modRoles.json
+spam.json

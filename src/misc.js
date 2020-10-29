@@ -11,13 +11,14 @@ try {
   uuid = require('uuid');
 }
 
+const ids = JSON.parse(fs.readFileSync("./info/ids.json", "utf8"));
 let mainGuild = null;
 
 // Moderator and staff roles
 let modRoles = JSON.parse(fs.readFileSync("./info/modRoles.json", "utf8"));
 
 // Bot reply emojis
-let botReplies = JSON.parse(fs.readFileSync("./info/botRepies.json", "utf8"));
+let botReplies = JSON.parse(fs.readFileSync("./info/botReplies.json", "utf8"));
 
 
 function delay(t) {
@@ -29,12 +30,12 @@ function delay(t) {
 function memberIsMod(message) {
   let ret = false;
   for (let i = 0; i < modRoles.length; i++) {
-    ret = ret || memberHasRole(message, modRoles[i]);
+    ret = ret || memberHasRole(message.member, modRoles[i]);
   }
   return ret;
 }
 
-function memberHasRole(message, role) {
+function memberHasRole(member, role) {
   return member.roles.cache.some(roles => roles.id === role);
 }
 

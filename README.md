@@ -26,6 +26,9 @@ If you do not have an "images only" channel, set "galleryChannel" to 0.
 TeddyBot supports emote reaction role assignment via info/roleEmoji.json. This file must contain a list of emote IDs and their corresponding role IDs, and which "set" they correspond to.
 If a list entry has "role" = 0, it is assumed to be a setup emote for the corresponding "set". Reacting to a post in your roleChannel with this emote will apply the rest of the emotes for role assignment.
 
+## Requirements
+NodeJS 12+
+Discord.js 12+
 
 ## Credits
 TeddyBot was forked from Gifkin, and reworked and maintained by NFreak.
