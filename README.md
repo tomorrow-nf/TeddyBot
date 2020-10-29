@@ -1,5 +1,5 @@
 # BacoBot
-The Official Bot for The Taco Bell Dollar Menu Destiny 2 [clan discord](https://discord.gg/Agpjyp5), providing basic quality of life improvements to the server.
+The Official Bot for The Taco Baco Dollar Menu Destiny 2 [clan discord](https://discord.gg/Agpjyp5), providing basic quality of life improvements to the server.
 
 Based off of StickBot, the CustomGCC Discord bot, which itself is a fork of Gifkin, the Icons: Combat Arena discord bot.
 
