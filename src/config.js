@@ -50,30 +50,28 @@ function configure() {
 		console.log("./info/botName.txt created and filled with example name.");
 	}
 
-	if (!fs.existsSync("./img/avatar.png")) {
-		didConfigure = true
-;		console.log("Bot avatar file not found, will default to TeddyBot. Update this file with your desired bot avatar png image.");
-		fs.copyFile("./img/avatar-default.png", "./img/avatar.png", null);
-		console.log("./img/avatar.png created and filled with example avatar.");
-	}
+	// if (!fs.existsSync("./img/avatar.png")) {
+	// 	didConfigure = true;		
+	// 	console.log("Bot avatar file not found, will default to TeddyBot. Update this file with your desired bot avatar png image.");
+	// 	fs.copyFile("./img/avatar-default.png", "./img/avatar.png", null);
+	// 	console.log("./img/avatar.png created and filled with example avatar.");
+	// }
 
 	if (!fs.existsSync("./info/ids.json")) {
 		didConfigure = true;
 		let ids = {
 			server: "123456",
-			welcomeChannel: "123456",
 			rulesChannel: "123456",
 			announcementsChannel: "123456",
 			moderationChannel: "123456",
 			introductionsChannel: "0",
+			galleryChannel: "0",
+			memesChannel, "0",
 			botlogChannel: "0",
 			rolesChannel: "123456",
-			rolesMessage1: "123456",
-			rolesMessage2: "0",
-			rolesMessage3: "0"
 		};
 		console.log("ids file not found. This file contains the specific IDs of either messages or channels that are used for things like reading specific message reactions, posting to specific server channels, etc.");
-		fs.writeFileSync("./info/ids.json", JSON.stringify(ids), "utf8");
+		fs.writeFileSync("./info/ids.json", JSON.stringify(ids, null, '\t'), "utf8");
 		console.log("./info/ids.json created and populated with example data.");
 	}
 
@@ -97,8 +95,18 @@ function configure() {
 
 	if (!fs.existsSync("./info/roleEmoji.json")) {
 		didConfigure = true;
-		fs.writeFileSync("./info/roleEmoji.json", "[]", "utf8");
-		console.log("./info/roleEmoji.json created. This list is what gets added to any message in the role-assignment channel after it sees a setup reaction. Configured with the !emotelist command.");
+		let exampleRoleEmoji = {
+          emote: "11111",
+          role: "22222"
+        };
+      	fs.writeFileSync('./info/roleEmoji.json', JSON.stringify(exampleRoleEmoji, null, '\t'),'utf8');
+		console.log("./info/roleEmoji.json created. The first emoji in this list should be your setup reaction. This list is what gets added to any message in the role-assignment channel after it sees a setup reaction, and their corresonding roles. Configured with the !emotelist command.");
+	}
+
+	if (!fs.existsSync("./info/botReplies.json")) {
+		didConfigure = true;
+		fs.writeFileSync("./info/botReplies.json", "[]", "utf8");
+		console.log("./info/botReplies.json created. This is a list of emotes the bot can reply with to any 'question' (i.e. mention the bot with a question mark");
 	}
 
 	if (!fs.existsSync("./info/userCommands.json")) {

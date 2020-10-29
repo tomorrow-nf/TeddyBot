@@ -11,11 +11,14 @@ try {
   uuid = require('uuid');
 }
 
-
-let reminders = JSON.parse(fs.readFileSync('./info/reminders.json', 'utf8'));
 let mainGuild = null;
 
-let isCheckingVoice = false;
+// Moderator and staff roles
+let modRoles = JSON.parse(fs.readFileSync("./info/modRoles.json", "utf8"));
+
+// Bot reply emojis
+let botReplies = JSON.parse(fs.readFileSync("./info/botRepies.json", "utf8"));
+
 
 function delay(t) {
   return new Promise(function (resolve) {
@@ -23,92 +26,21 @@ function delay(t) {
   });
 }
 
-function addReminder(date, message) {
-  let o = {
-    date: date,
-    message: message,
-    id: uuid(),
-  };
-
-  reminders.push(o);
-  fs.writeFileSync(
-    './info/reminders.json',
-    JSON.stringify(reminders, null, '\t'),
-    'utf8'
-  );
-  console.log('Added reminder: ' + message);
-}
-
-function removeReminder(id) {
-  let indexToRemove = -1;
-  for (let i = 0; i < reminders.length; i++) {
-    if (reminders[i].id == id) {
-      indexToRemove = i;
-      break;
-    }
-  }
-
-  if (indexToRemove > -1) {
-    reminders.splice(indexToRemove, 1);
-    fs.writeFileSync(
-      './info/reminders.json',
-      JSON.stringify(reminders, null, '\t'),
-      'utf8'
-    );
-    console.log('Removed reminder.');
-  } else {
-    console.log('Tried to remove invalid reminder?');
-  }
-}
-
-function checkReminders() {
-  let currentDate = new Date();
-
-  for (let i = 0; i < reminders.length; i++) {
-    if (currentDate > new Date(reminders[i].date)) {
-      return reminders[i];
-    }
-  }
-  return null;
-}
-
 function memberIsMod(message) {
   let ret = false;
-  const modNames = ['Hit Box Team', 'Admins', 'Mods', 'Bots'];
-  for (let i = 0; i < modNames.length; i++) {
-    ret = ret || memberHasRole(message, modNames[i]);
+  for (let i = 0; i < modRoles.length; i++) {
+    ret = ret || memberHasRole(message, modRoles[i]);
   }
   return ret;
 }
 
-function memberHasRole(message, roleName) {
-  let ret = false;
-  try {
-    ret = roleInRoles(
-      roleName,
-      message.guild.member(message.author).roles.cache.array()
-    );
-  } catch (e) {
-    ret = false;
-  }
-
-  return ret;
-}
-
-function roleInRoles(roleName, roles) {
-  for (let i = 0; i < roles.length; i++) {
-    if (roles[i].name == roleName) return true;
-  }
-  return false;
+function memberHasRole(message, role) {
+  return member.roles.cache.some(roles => roles.id === role);
 }
 
 async function botReply(message, DiscordBot) {
-  let a = Math.floor(Math.random() * 10);
-  let s = ['gravy', 'oof', 'feb22', 'deletethis', 'drmario'];
-  let selectedName = s[Math.floor(Math.random() * s.length)];
-
-  let emote = DiscordBot.emojis.cache.find(emojis => emojis.name === selectedName);
-
+  let ran = Math.floor(Math.random() * 10);
+  let emote = DiscordBot.emojis.cache.find(emojis => emojis.id === botReplies[ran]);
   return await message.channel.send(emote.toString());
 }
 
@@ -126,13 +58,8 @@ function attachIsImage(msgAttach) {
 }
 
 module.exports.delay = delay;
-module.exports.roleInRoles = roleInRoles;
 module.exports.memberIsMod = memberIsMod;
 module.exports.memberHasRole = memberHasRole;
 module.exports.ids = ids;
 module.exports.botReply = botReply;
-module.exports.reminders = reminders;
-module.exports.addReminder = addReminder;
-module.exports.removeReminder = removeReminder;
-module.exports.checkReminders = checkReminders;
 module.exports.mainGuild = mainGuild;

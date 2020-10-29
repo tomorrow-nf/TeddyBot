@@ -9,66 +9,52 @@
 const fs = require("fs");
 const misc = require("./misc.js");
 
-let removeReacts = true;
-const emojiRoleDict = {
-	"hitbox" : "Hit Box User",
-	"smashbox" : "Smash Box User",
-	"crossup" : "Cross|Up User"
-}
+let emojiSets = JSON.parse(fs.readFileSync("./info/roleEmoji.json", "utf8"));
 
-function emojiToRole(emojiName, messageID) {
-	let ret = emojiRoleDict[emojiName];
-	return ret;
-}
-
-async function handleReactionAdd(messageReaction, user, DiscordBot) {
-	if (messageReaction.message.channel.name == "role-assignment") {
-		if (messageReaction.partial){
-			try {
-				await messageReaction.fetch();
-				if (messageReaction.emoji.name == "gravy") {
-					console.log("Received gravy react for role-assignment setup");
-					//add role emotes
-					removeReacts = false;
-					let emojiNames = JSON.parse(fs.readFileSync("./info/roleEmoji.json", "utf8"));
-					for (let i = 0; i < emojiNames.length; i++) {
-						await messageReaction.message.react(DiscordBot.emojis.cache.find(emojis => emojis.name === emojiNames[i]));
-					}
-					messageReaction.remove; //remove the gravy emoji
-					removeReacts = true;
-				} else {
-					console.log("Received something other than gravy, check if valid");
-					let member = messageReaction.message.member;
-					let hasRole = false;
-					let newRole = emojiToRole(messageReaction.emoji.name, messageReaction.message.id);
-					try {
-						hasRole = member.roles.cache.some(role => role.name === newRole);
-					} catch (error) {
-						console.error(error);
-					}
-
-					let roleToAdd = messageReaction.message.member.guild.roles.cache.find(role => role.name === newRole);
-					if (!hasRole) {
-						console.log("Add role " + emojiToRole(messageReaction.emoji.name, messageReaction.message.id));
-						member.roles.add(roleToAdd);
+async function handleReactionAdd(reaction, user, TeddyBot) {
+	if (reaction.message.channel == ids.roleChannel) {
+		if (reaction.partial){
+			for (let i = 0; i < emojiSets.length; i++){
+				try {
+					await reaction.fetch();
+					if (emojiSets[i] == 0) {
+						console.log("Received a setup react for role assignment");
+						let setNumber = emojiSets[i].set;
+						// Loop through again to add reacts for setup
+						for (let j = 0; j < emojiSets.length; j++) {
+							if (emojiSets[j].set == setNumber && emojiSets[j].role != "0"){
+								await reaction.message.react(TeddyBot.emojis.cache.find(emojis => emojis.id === emojiSets[j]));
+							}
+						}
+						reaction.remove; //remove the setup emoji
 					} else {
-						console.log("Remove role " + emojiToRole(messageReaction.emoji.name));
-						member.roles.remove(roleToAdd);
-					}
+						console.log("Received something other than setup react, check if valid");
+						if (reaction.emoji.id != emojiSets[i]){
+							// Do nothing. Keep looping though to find this emote. If never found, nothing will happen
+						}
+						else {
+							let hasRole = misc.memberHasRole(user, emojiSets[i]);
 
-					if (removeReacts){
-						messageReaction.remove; //as per desired behavior, remove their reaction after they add it
+							if (!hasRole) {
+								console.log(`Add role ${emojiSets[i]} to user ${user}`);
+								user.roles.add(roleToAdd);
+							} else {
+								console.log("Remove role " + emojiToRole(reaction.emoji.name));
+								user.roles.remove(roleToAdd);
+							}
+						}
+						reaction.remove; // Remove their reaction after they add it to clean up
 					}
-					return;
+				} catch (error) {
+					console.error(error);
 				}
-			} catch (error) {
-				console.error(error);
 			}
 		}
 	}
 }
 
-async function handleReactionRemove(messageReaction, user, DiscordBot) {
+async function handleReactionRemove(reaction, user, TeddyBot) {
+	// Nothing to do
 	return null;
 }
 

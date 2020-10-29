@@ -13,13 +13,19 @@ TeddyBot is a Discord Bot powered by [discord.js](https://discord.js.org/). The 
 * and other small improvements
 
 ## Usage
-TeddyBot is structured to be easily configurable for any server by editing several JSON files. This bot assumes you know how to obtain Discord IDs for your server, channels, and roles.
+TeddyBot is structured to be easily configurable for any server by editing several JSON files. As well, it can be forked and modified per server for even deeper customization. This bot assumes you know how to obtain Discord IDs for your server, channels, and roles.
 
 /src/config.js will run upon running the bot, and will create the files you'll need to get it up and running. These must be populated appropriately, especially discordToken.txt.
 
-If you do not want server member introductions, set "introductions-channel" to 0.
-If you want to share moderation and bot-log channels in a single channel, set "botlog-channel" to 0.
-Only use as many role-messageX IDs as need be (i.e. if you have 2 "sets" of roles, like a game character main and pronouns, you can set these to two separate messages for users to react to)
+If you do not want server member introductions, set "introductionsChannel" to 0.
+If you want to share moderation and bot-log channels in a single channel, set "botlogChannel" to 0.
+If you do not want a meme channel to dump random images with the !meme command, set "memeChannel" to 0.
+If you do not have an "images only" channel, set "galleryChannel" to 0.
+
+## Role Assignment
+TeddyBot supports emote reaction role assignment via info/roleEmoji.json. This file must contain a list of emote IDs and their corresponding role IDs, and which "set" they correspond to.
+If a list entry has "role" = 0, it is assumed to be a setup emote for the corresponding "set". Reacting to a post in your roleChannel with this emote will apply the rest of the emotes for role assignment.
+
 
 ## Credits
 TeddyBot was forked from Gifkin, and reworked and maintained by NFreak.
