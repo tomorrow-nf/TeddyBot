@@ -4,7 +4,7 @@
   "description": "A basic Discord bot providing basic quality of life improvements to any server.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "node index.js"
   },
   "repository": {
     "type": "git",
@@ -17,6 +17,8 @@
   },
   "homepage": "https://github.com/tomorrow-nf/TeddyBot#readme",
   "dependencies": {
-    "discord.js": "^12.4.1"
+    "discord.js": "^12.4.1",
+    "prettier": "^2.1.2",
+    "uuid": "^8.3.1"
   }
 }
