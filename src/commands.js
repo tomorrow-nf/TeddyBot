@@ -562,18 +562,21 @@ async function userCommands(message, args) {
     let guild = message.member.guild;
     await guild
       .member(message.author)
-      .addRole(guild.roles.find('name', 'Contributor'));
+      .roles.add(guild.roles.cache.find((role) => role.name === 'Contributor'));
     await message.channel.send(
       '<@!' +
         message.author.id +
-        '>, you are now a Contributor. You can post **ONE** message to ' +
-        message.guild.channels.find('name', 'resources') +
-        '. Thank you for your contribution!'
+        '>, you are now a Contributor. You can post **ONE** message to <#' +
+        message.guild.channels.cache.find((chan) => chan.name === 'resources')
+          .id +
+        '>. Thank you for your contribution!'
     );
     return setTimeout(() => {
       guild
         .member(message.author)
-        .removeRole(guild.roles.find('name', 'Contributor'));
+        .roles.remove(
+          guild.roles.cache.find((role) => role.name === 'Contributor')
+        );
     }, 300000); // 5 minutes
   }
   // CHALLENGE COMMANDS
