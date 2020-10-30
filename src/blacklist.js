@@ -87,7 +87,7 @@ async function handleBlacklist(message, DiscordBotTag) {
 			break;
 		}
 	}
-	if (censoredWord && message.author.tag != DiscordBotTag && !misc.memberIsMod(message) && !(misc.memberIsMod(message) && message.content.startsWith("!blacklist")) && blacklistIgnore.indexOf(message.channel.id) == -1) {
+	if (censoredWord && message.author.tag != DiscordBotTag && !misc.memberIsMod(message.member) && !(misc.memberIsMod(message.member) && message.content.startsWith("!blacklist")) && blacklistIgnore.indexOf(message.channel.id) == -1) {
 		await message.delete();
 
 		try {
@@ -130,14 +130,14 @@ async function handleBlacklistPotential(message, DiscordBotTag) {
 			}
 		}
 	}
-	if (potentialViolation && message.author.tag != DiscordBotTag && !misc.memberIsMod(message) && !(misc.memberIsMod(message) && message.content.startsWith("!blacklist")) && blacklistIgnore.indexOf(message.channel.id) == -1) {
+	if (potentialViolation && message.author.tag != DiscordBotTag && !misc.memberIsMod(message.member) && !(misc.memberIsMod(message.member) && message.content.startsWith("!blacklist")) && blacklistIgnore.indexOf(message.channel.id) == -1) {
 		await blacklistAlertMods(message, potentialViolation, true);
 		censorshipInfoAddWarning(message.author, potentialViolation);
 	}
 }
 
 async function handleBlacklistCommands(message, args) {
-	if (args[0] == "!blacklist" && misc.memberIsMod(message)) {
+	if (args[0] == "!blacklist" && misc.memberIsMod(message.member)) {
 		if (args.length == 1) {
 			let str = "Words on the blacklist: \n`";
 			for (let i = 0; i < blacklist.length; i++) {
@@ -202,7 +202,7 @@ async function handleBlacklistCommands(message, args) {
 				await message.channel.send("Usage: `!blacklist warnings ID|Tag`");
 			}
 		} 
-	} else if (args[0] == "!log" && misc.memberIsMod(message)) {
+	} else if (args[0] == "!log" && misc.memberIsMod(message.member)) {
 		let keys = Object.keys(censorshipInfo);
 		let str = "```";
 		for (let i = 0; i < keys.length; i++) {
