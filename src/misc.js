@@ -11,15 +11,14 @@ try {
   uuid = require('uuid');
 }
 
-const ids = JSON.parse(fs.readFileSync("./info/ids.json", "utf8"));
+const ids = JSON.parse(fs.readFileSync('./info/ids.json', 'utf8'));
 let mainGuild = null;
 
 // Moderator and staff roles
-let modRoles = JSON.parse(fs.readFileSync("./info/modRoles.json", "utf8"));
+let modRoles = JSON.parse(fs.readFileSync('./info/modRoles.json', 'utf8'));
 
 // Bot reply emojis
-let botReplies = JSON.parse(fs.readFileSync("./info/botReplies.json", "utf8"));
-
+let botReplies = JSON.parse(fs.readFileSync('./info/botReplies.json', 'utf8'));
 
 function delay(t) {
   return new Promise(function (resolve) {
@@ -36,13 +35,25 @@ function memberIsMod(member) {
 }
 
 function memberHasRole(member, role) {
-  return member.roles.cache.some(roles => roles.id === role);
+  return member.roles.cache.some((roles) => roles.id === role);
 }
 
 async function botReply(message, DiscordBot) {
   let ran = Math.floor(Math.random() * 10);
-  let emote = DiscordBot.emojis.cache.find(emojis => emojis.id === botReplies[ran]);
+  let emote = DiscordBot.emojis.cache.find(
+    (emojis) => emojis.id === botReplies[ran]
+  );
   return await message.channel.send(emote.toString());
+}
+
+async function fakeBan(message, DiscordBot) {
+  if (!message.mentions.has(DiscordBot)) {
+    return;
+  }
+
+  return await message.channel.send(
+    `*User <@${message.author.id}> Has Been Banned For This Post*`
+  );
 }
 
 function attachIsImage(msgAttach) {
@@ -64,3 +75,4 @@ module.exports.memberHasRole = memberHasRole;
 module.exports.ids = ids;
 module.exports.botReply = botReply;
 module.exports.mainGuild = mainGuild;
+module.exports.fakeBan = fakeBan;
