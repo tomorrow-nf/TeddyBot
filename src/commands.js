@@ -81,7 +81,7 @@ helpString[1] +=
 
 async function modCommands(message, args) {
   if (args[0] == '!members') {
-    let memberList = message.guild.members.array();
+    let memberList = message.guild.members.cache.array();
     let memberCount = message.guild.memberCount;
     let onlineCount = 0;
     for (let i = 0; i < memberList.length; i++) {
@@ -429,7 +429,7 @@ async function modCommands(message, args) {
       misc.ids.memesChannel != '0' &&
       message.channel.id == misc.ids.memesChannel
     ) {
-      fs.readdir('./img/memes/', (_, files) => {
+      fs.readdir('./img/memes/', (err, files) => {
         var num;
         if (args.length === 2) {
           num = args[1];
