@@ -47,7 +47,7 @@ async function botReply(message, DiscordBot) {
 }
 
 async function fakeBan(message, DiscordBot) {
-  if (!message.mentions.has(DiscordBot)) {
+  if (message.mentions.everyone || !message.mentions.has(DiscordBot)) {
     return;
   }
 
