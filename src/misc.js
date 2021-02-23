@@ -4,7 +4,10 @@
 */
 const fs = require('fs');
 const request = null;
+const destDms = 'dms';
+const destAny = 'anywhere';
 var uuid;
+var _ = require('lodash');
 try {
   uuid = require('uuid/v4');
 } catch {
@@ -46,6 +49,31 @@ async function botReply(message, DiscordBot) {
   return await message.channel.send(emote.toString());
 }
 
+async function sendToDestination(message, destination, text, warn = false) {
+  if (_.isNil(destination) || destination === 0 || _.isNil(message.guild) || memberIsMod(message.Author)) {
+    return await message.channel.send(text);
+  } else if (destination === destDms) {
+    try {
+      await message.author.send(text);
+      return await message.delete();
+    } catch (e) {
+      return await message.channel.send(text);
+    }
+  }
+
+  channel = message.guild.channels.cache.get(destination)
+  if (_.isNil(channel) || channel.id === message.channel.id) {
+    return await message.channel.send(text);
+  }
+  if (warn) {
+    await channel.send(`*${message.author} please run this in ${channel} next time.*\n${text}`);
+  } else {
+    return await channel.send(text);
+  }
+  return await message.delete()
+
+}
+
 async function fakeBan(message, DiscordBot) {
   if (message.mentions.everyone || !message.mentions.has(DiscordBot)) {
     return;
@@ -76,3 +104,6 @@ module.exports.ids = ids;
 module.exports.botReply = botReply;
 module.exports.mainGuild = mainGuild;
 module.exports.fakeBan = fakeBan;
+module.exports.sendToDestination = sendToDestination;
+module.exports.destDms = destDms;
+module.exports.destAny = destAny;

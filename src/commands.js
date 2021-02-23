@@ -6,10 +6,15 @@
 const fs = require('fs');
 const misc = require('./misc.js');
 const blacklist = require('./blacklist.js');
+const channels = JSON.parse(fs.readFileSync('./info/ids.json', 'utf8'));
+const helpDest = channels.helpChannel
+var _ = require('lodash');
 
 let userCommandList = JSON.parse(
   fs.readFileSync('./info/userCommands.json', 'utf8')
 );
+let userCommandDestinations
+generateUserCommandDestinations()
 
 //Spambot detection
 let spamlist = JSON.parse(fs.readFileSync('./info/spam.json', 'utf8'));
@@ -32,6 +37,8 @@ helpString[0] +=
   '`!removecommand COMMAND_NAME` - Will remove the user-accessible =`COMMAND_NAME`, if it exists.\n';
 helpString[0] +=
   '`!hidecommand COMMAND_NAME` - Toggles visibility of a help command.\n';
+helpString[0] +=
+  '`!setcommanddest COMMAND_NAME DESTINATION` - Sets the destination channel of a command, leave this blank to clear, or use `dms` to send it to dms.\n';
 helpString[0] +=
   '`!helpcount` - Show number of uses each user command has recieved.\n';
 helpString[0] += '`!helphidden` - Display hidden user commands.\n';
@@ -94,7 +101,7 @@ async function modCommands(message, args) {
     let msgArray = [];
     let before = '';
     for (let i = 0; i < quantity_messages; i++) {
-      let options = { limit: 100 };
+      let options = {limit: 100};
       if (before != '') options.before = before;
 
       let msgs = await relevant_channel.messages.fetch(options);
@@ -120,9 +127,8 @@ async function modCommands(message, args) {
     dictArray.sort(function (a, b) {
       return b[1] - a[1];
     });
-    let str = `Top ${placements} #${args[3]} posters as of the last ${
-      args[2]
-    } messages, since ${msgArray[msgArray.length - 1].createdAt} :\n\n`;
+    let str = `Top ${placements} #${args[3]} posters as of the last ${args[2]
+      } messages, since ${msgArray[msgArray.length - 1].createdAt} :\n\n`;
     for (let i = 0; i < placements && i < dictArray.length; i++) {
       str += dictArray[i][2] + ': ' + dictArray[i][1] + '\n';
     }
@@ -144,10 +150,10 @@ async function modCommands(message, args) {
       );
       console.log(
         'Received purge request for channel ' +
-          relevant_channel.name +
-          ', ' +
-          quantity_messages +
-          ' messages'
+        relevant_channel.name +
+        ', ' +
+        quantity_messages +
+        ' messages'
       );
     } catch (e) {
       return await message.channel.send(e.message);
@@ -162,7 +168,7 @@ async function modCommands(message, args) {
     let msgArray = [];
     let before = '';
     for (let i = 0; i < quantity_messages; i++) {
-      let options = { limit: 1 };
+      let options = {limit: 1};
       let msgs = await relevant_channel.messages.fetch(options);
       msgs = msgs.array();
       for (let j = 0; j < msgs.length; j++) {
@@ -244,6 +250,7 @@ async function modCommands(message, args) {
         userCommandList.push(toAdd);
       }
 
+      generateUserCommandDestinations()
       fs.writeFileSync(
         './info/userCommands.json',
         JSON.stringify(userCommandList, null, '\t'),
@@ -271,6 +278,7 @@ async function modCommands(message, args) {
       }
     }
 
+    generateUserCommandDestinations()
     fs.writeFileSync(
       './info/userCommands.json',
       JSON.stringify(userCommandList, null, '\t'),
@@ -298,6 +306,7 @@ async function modCommands(message, args) {
       userCommandList[index].description = message.content.substring(
         args[0].length + args[1].length + 2
       );
+      generateUserCommandDestinations()
       fs.writeFileSync(
         './info/userCommands.json',
         JSON.stringify(userCommandList, null, '\t'),
@@ -309,6 +318,57 @@ async function modCommands(message, args) {
     } else {
       return await message.channel.send(
         'Could not find `' + commandPrefix + args[1] + '`.'
+      );
+    }
+  } else if (args[0] === '!setcommanddest') {
+    let relevant_channel = null;
+    if (args.length < 2)
+      return await message.channel.send(
+        'USAGE: `!setcommanddest COMMANDNAME DESTINATION` ie to have `!ping` run in `spam` type `!setcommanddest ping spam`, or in dms type `!setcommanddest ping dms` supply with no destination to clear.'
+      );
+    if (args[1][0] == commandPrefix)
+      //remove user-typed prefix if it exists
+      args[1] = args[1].substring(1);
+    let index = -1;
+    for (let i = 0; i < userCommandList.length; i++) {
+      if (userCommandList[i].command == commandPrefix + args[1]) index = i;
+    }
+    if (index != -1) {
+      if (args.length == 2) {
+        userCommandList[index].destination = '';
+      } else if (args[2] == misc.destDms) {
+        userCommandList[index].destination = misc.destDms;
+      } else {
+        if (args[2].startsWith('#')) {
+          args[2] = args[2].substring(1);
+        }
+        try {
+          relevant_channel = message.guild.channels.cache.find(
+            (channel) => channel.name === args[2]
+          );
+        } catch (e) {
+          return await message.channel.send(e.message);
+        }
+        if (relevant_channel == null) {
+          return await message.channel.send(
+            "I couldn't find a channel with that name."
+          );
+        }
+        userCommandList[index].destination = relevant_channel.id;
+      }
+      generateUserCommandDestinations()
+      fs.writeFileSync(
+        './info/userCommands.json',
+        JSON.stringify(userCommandList, null, '\t'),
+        'utf8'
+      );
+
+      return await message.channel.send(
+        `Set \`${commandPrefix}${args[1]}\` to ${(userCommandList[index].destination ? (userCommandList[index].destination == misc.destDms ? 'run in dms' : `run in ${relevant_channel}`) : 'run anywhere')}.`
+      );
+    } else {
+      return await message.channel.send(
+        'Could not find the command `' + commandPrefix + args[1] + '`.'
       );
     }
   } else if (args[0] == '!hidecommand') {
@@ -326,6 +386,7 @@ async function modCommands(message, args) {
     if (index != -1) {
       if (!userCommandList[index].hide) userCommandList[index].hide = true;
       else userCommandList[index].hide = false;
+      generateUserCommandDestinations()
       fs.writeFileSync(
         './info/userCommands.json',
         JSON.stringify(userCommandList, null, '\t'),
@@ -333,11 +394,11 @@ async function modCommands(message, args) {
       );
       return await message.channel.send(
         'Set `' +
-          commandPrefix +
-          args[1] +
-          '` to ' +
-          (userCommandList[index].hide ? 'hidden' : 'visible') +
-          '.'
+        commandPrefix +
+        args[1] +
+        '` to ' +
+        (userCommandList[index].hide ? 'hidden' : 'visible') +
+        '.'
       );
     } else {
       return await message.channel.send(
@@ -432,26 +493,67 @@ async function modCommands(message, args) {
     }
   }
 }
+function generateUserCommandDestinations() {
+  const destinations = new Map()
+  userCommandList.forEach((cmd) => {
+    const dest = cmd.destination
+    if (dest == misc.destDms) {
+      if (_.isEmpty(destinations[dest])) {
+        destinations[dest] = []
+      }
+      destinations[dest].push(cmd)
+      return
+    }
+    if (!dest || dest === 0 || dest === "") {
+      if (_.isEmpty(destinations[misc.destAny])) {
+        destinations[misc.destAny] = []
+      }
+      destinations[misc.destAny].push(cmd)
+      return
+    }
+    if (_.isEmpty(destinations[dest])) {
+      destinations[dest] = []
+    }
+    destinations[dest].push(cmd)
+  })
+  userCommandDestinations = destinations
+}
 
 async function userCommands(message, args) {
   if (args[0] == '!help') {
-    let userHelpString = '';
-    for (let i = 0; i < userCommandList.length; i++) {
-      if (!userCommandList[i].hide) {
+
+    let userHelpString = ''
+
+    const generateCommandText = (cmd) => {
+      if (!cmd.hide) {
         userHelpString +=
           '`' +
-          userCommandList[i].command +
+          cmd.command +
           '` -  ' +
-          userCommandList[i].description +
+          cmd.description +
           '\n';
       }
     }
-    if (misc.ids.memesChannel != '0') {
-      userHelpString +=
-        '`!meme` - Post a random meme (only useable in the memes channel).\n';
+
+    if (!_.isEmpty(userCommandDestinations[misc.destAny])) {
+      userHelpString += '__*Use these commands anywhere:*__\n';
+      _.forEach(userCommandDestinations[misc.destAny], generateCommandText)
     }
-    return await message.channel.send(
-      `Here's a list of commands for all users:\n${userHelpString}`
+
+    if (!_.isEmpty(userCommandDestinations[misc.destDms])) {
+      userHelpString += '__*Use these commands in your dms:*__\n';
+      _.forEach(userCommandDestinations[misc.destDms], generateCommandText)
+    }
+
+    _.forEach(userCommandDestinations, (cmds, dest) => {
+      if (dest === misc.destDms || dest === misc.destAny) {
+        return
+      }
+      userHelpString += `__*Use these commands in <#${dest}>:*__\n`;
+      _.forEach(cmds, generateCommandText)
+    })
+    return await misc.sendToDestination(message, helpDest,
+      `**Here's a list of commands for all users:**\n${userHelpString}`
     );
   } else if (args[0].startsWith(commandPrefix)) {
     for (let i = 0; i < userCommandList.length; i++) {
@@ -464,11 +566,12 @@ async function userCommands(message, args) {
           JSON.stringify(userCommandList, null, '\t'),
           'utf8'
         );
-        return await message.channel.send(userCommandList[i].text);
+        misc.sendToDestination(message, userCommandList[i].destination, userCommandList[i].text, true)
       }
     }
   }
 }
+
 
 module.exports.modCommands = modCommands;
 module.exports.userCommands = userCommands;
