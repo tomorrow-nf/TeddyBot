@@ -500,6 +500,9 @@ async function modCommands(message, args) {
 function generateUserCommandDestinations() {
   const destinations = new Map()
   userCommandList.forEach((cmd) => {
+    if (cmd.hide) {
+      return
+    }
     const dest = cmd.destination
     if (dest == misc.destDms) {
       if (_.isEmpty(destinations[dest])) {
@@ -529,14 +532,12 @@ async function userCommands(message, args) {
     let userHelpString = ''
 
     const generateCommandText = (cmd) => {
-      if (!cmd.hide) {
-        userHelpString +=
-          '`' +
-          cmd.command +
-          '` -  ' +
-          cmd.description +
-          '\n';
-      }
+      userHelpString +=
+        '`' +
+        cmd.command +
+        '` -  ' +
+        cmd.description +
+        '\n';
     }
 
     if (!_.isEmpty(userCommandDestinations[misc.destAny])) {
