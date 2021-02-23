@@ -64,6 +64,8 @@ helpString[1] +=
   '`!spambots add word` - Add a string to the new user spambot filter\n';
 helpString[1] +=
   '`!spambots remove word` - Remove a string from the spambot filter\n';
+helpString[1] +=
+  '`!dmbot` - start a dm with HitBoxBot\n';
 
 async function modCommands(message, args) {
   if (args[0] == '!members') {
@@ -491,6 +493,8 @@ async function modCommands(message, args) {
         });
       });
     }
+  } else if (args[0] === "!dmbot") {
+    return message.author.send("hi");
   }
 }
 function generateUserCommandDestinations() {
