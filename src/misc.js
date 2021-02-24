@@ -30,7 +30,6 @@ function delay(t) {
 }
 
 function memberIsMod(member) {
-  return true;
   let ret = false;
   for (let i = 0; i < modRoles.length; i++) {
     ret = ret || memberHasRole(member, modRoles[i]);
