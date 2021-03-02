@@ -41,7 +41,7 @@ function memberHasRole(member, role) {
   if (_.isNil(member) || _.isNil(member.roles)) {
     return false
   }
-  return member.roles.cache.find((roles) => roles.id === role);
+  return member.roles.cache.some((roles) => roles.id === role);
 }
 
 async function botReply(message, DiscordBot) {
