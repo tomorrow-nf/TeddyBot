@@ -41,7 +41,7 @@ function memberHasRole(member, role) {
   if (_.isNil(member) || _.isNil(member.roles)) {
     return false
   }
-  return member.roles.cache.some((roles) => roles.id === role);
+  return member.roles.cache.find((roles) => roles.id === role);
 }
 
 async function botReply(message, DiscordBot) {
@@ -53,28 +53,33 @@ async function botReply(message, DiscordBot) {
 }
 
 async function sendToDestination(message, destination, text, warn = false) {
-  if (_.isNil(destination) || destination === 0 || _.isNil(message.guild) || memberIsMod(message.Author)) {
+  if (_.isNil(destination) || destination === 0 || _.isNil(message.guild) || memberIsMod(message.member)) {
     return await message.channel.send(text);
   } else if (destination === destDms) {
+    let msg = text
+    if (warn) {
+      msg = `*${message.author} please run this in your dms next time.*\n${text}`
+    }
     try {
-      await message.author.send(text);
+      await message.author.send(msg);
       return await message.delete();
     } catch (e) {
+      return await message.channel.send(msg);
+    }
+  } else {
+
+    channel = message.guild.channels.cache.get(destination)
+    if (_.isNil(channel) || channel.id === message.channel.id) {
       return await message.channel.send(text);
     }
-  }
 
-  channel = message.guild.channels.cache.get(destination)
-  if (_.isNil(channel) || channel.id === message.channel.id) {
-    return await message.channel.send(text);
+    if (warn) {
+      await channel.send(`*${message.author} please run this in ${channel} next time.*\n${text}`);
+    } else {
+      return await channel.send(text);
+    }
+    return await message.delete()
   }
-  if (warn) {
-    await channel.send(`*${message.author} please run this in ${channel} next time.*\n${text}`);
-  } else {
-    return await channel.send(text);
-  }
-  return await message.delete()
-
 }
 
 async function fakeBan(message, DiscordBot) {
