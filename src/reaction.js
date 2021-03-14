@@ -49,7 +49,11 @@ async function handleReactionAdd(reaction, user, TeddyBot) {
 							console.log(`Add role ${emojiSets[i].role} to user ${user}`);
 							guild.member(user).roles.add(emojiSets[i].role);
 						} else {
-							if (reaction.message.channel != misc.ids.rulesChannel){
+							if (reaction.message.channel == misc.ids.rulesChannel){
+								// hard-coding this for now
+								console.log(`Remove Guest from user ${user}`);
+								guild.member(user).roles.remove("820499893881667584".role);
+							} else {
 								console.log(`Remove role ${emojiSets[i].role} from user ${user}`);
 								guild.member(user).roles.remove(emojiSets[i].role);
 							}
