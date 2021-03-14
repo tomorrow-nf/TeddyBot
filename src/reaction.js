@@ -15,7 +15,8 @@ let removeReacts = true;
 
 async function handleReactionAdd(reaction, user, TeddyBot) {
 	if (user.bot) return;
-	if (reaction.message.channel == misc.ids.rolesChannel) {
+	if (reaction.message.channel == misc.ids.rolesChannel
+		|| reaction.message.channel == misc.ids.rulesChannel) {
 		if (reaction.partial){
 			await reaction.fetch();
 		}
