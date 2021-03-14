@@ -122,7 +122,6 @@ TeddyBot.on("messageReactionRemove", async (messageReaction, user) => {
 TeddyBot.on('guildMemberAdd', async(member) => {
 	try {
 		console.log("New member joined: " + member.displayName);
-		let introductionsChannel = TeddyBot.channels.cache.get(ids.introductionsChannel);
 		let rulesChannel = TeddyBot.channels.cache.get(ids.rulesChannel);
 		var ran = Math.floor(Math.random() * introMessages.length);
 
@@ -138,18 +137,6 @@ TeddyBot.on('guildMemberAdd', async(member) => {
 		}
 		
 		if (!spam){
-			if(introductionsChannel != null){
-				// Send a custom intro if provided, otherwise send a Welcome. In both cases, let them know they'll get a member
-				// role soon if the server uses these
-				if (introMessages.length > 0){
-					await introductionsChannel.send(`${introMessages[ran]} ${member} ! Be sure to read through ${rulesChannel}.`);
-				} else {
-					await introductionsChannel.send(`Welcome ${member} ! Be sure to read through ${rulesChannel}.`);
-				}
-				if (memberRoles.length > 0){
-					await introductionsChannel.send("You'll be granted a member role very soon to access the rest of the server.");
-				}
-			}
 			if(memberRoles.length > 0){
 				for (let i = 0; i < memberRoles.length; i++) {
 					member.roles.add(member.guild.roles.cache.find(roles => roles.id === memberRoles[i]));
