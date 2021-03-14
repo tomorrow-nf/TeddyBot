@@ -138,7 +138,7 @@ TeddyBot.on('guildMemberAdd', async(member) => {
 		}
 		
 		if (!spam){
-			if(introductionsChannel != 0){
+			if(introductionsChannel != null){
 				// Send a custom intro if provided, otherwise send a Welcome. In both cases, let them know they'll get a member
 				// role soon if the server uses these
 				if (introMessages.length > 0){
@@ -151,12 +151,10 @@ TeddyBot.on('guildMemberAdd', async(member) => {
 				}
 			}
 			if(memberRoles.length > 0){
-				setTimeout(() => {
-					for (let i = 0; i < memberRoles.length; i++) {
-						member.roles.add(member.guild.roles.cache.find(roles => roles.id === memberRoles[i]));
-						console.log(`Assigned ${member.displayName} a member role`);
-					}
-				}, 60000) // 1 minute waiting period
+				for (let i = 0; i < memberRoles.length; i++) {
+					member.roles.add(member.guild.roles.cache.find(roles => roles.id === memberRoles[i]));
+					console.log(`Assigned ${member.displayName} a member role`);
+				}
 			}
 		}
 	} catch (e){
