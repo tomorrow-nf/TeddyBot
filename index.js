@@ -135,13 +135,14 @@ TeddyBot.on('guildMemberAdd', async(member) => {
 				await member.kick("Spambot eliminated");
 			}
 		}
-		
 		if (!spam){
 			if(memberRoles.length > 0){
-				for (let i = 0; i < memberRoles.length; i++) {
-					member.roles.add(member.guild.roles.cache.find(roles => roles.id === memberRoles[i]));
-					console.log(`Assigned ${member.displayName} a member role`);
-				}
+				setTimeout(() => {
+					for (let i = 0; i < memberRoles.length; i++) {
+						member.roles.add(member.guild.roles.cache.find(roles => roles.id === memberRoles[i]));
+						console.log(`Assigned ${member.displayName} a member role`);
+					}
+				}, 5000) // 5 seconds
 			}
 		}
 	} catch (e){
