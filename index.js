@@ -1,6 +1,6 @@
 /*
-	index.js
-	Basic setup and core commands run on various actions such as bot startup, messages, reactions, etc.
+  index.js
+  Basic setup and core commands run on various actions such as bot startup, messages, reactions, etc.
 */
 
 // Node imports
@@ -46,7 +46,7 @@ let mainGuild = null;
 
 // Create the bot
 const TeddyBot = new Discord.Client({
-  ws: { intents: new Discord.Intents(Discord.Intents.ALL) },
+  ws: {intents: new Discord.Intents(Discord.Intents.ALL)},
   partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
 });
 
@@ -173,6 +173,11 @@ TeddyBot.on('guildMemberAdd', async (member) => {
             `Welcome ${member} ! Be sure to read through ${rulesChannel}.`
           );
         }
+
+        await introductionsChannel.send(
+          "For more info, type `!help` in here."
+        );
+
         if (memberRoles.length > 0) {
           await introductionsChannel.send(
             "You'll be granted a member role very soon to access the rest of the server."
