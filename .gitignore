@@ -1,5 +1,11 @@
 node_modules
 dist
-info
 .vscode
+*.txt
+info/*.json
+info/*.csv
+info/*.txt
+img/memes/*
+img/misc/*
+
 
