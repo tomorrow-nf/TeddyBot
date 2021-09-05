@@ -4,7 +4,11 @@
   "description": "A basic Discord bot providing basic quality of life improvements to any server.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "tsc&&node dist/index.js",
+    "restart-pm2": "pm2 restart hitbox",
+    "logs": "pm2 logs hitbox",
+    "start-pm2": "pm2 start hitbox.sh"
   },
   "repository": {
     "type": "git",
@@ -17,8 +21,15 @@
   },
   "homepage": "https://github.com/tomorrow-nf/TeddyBot#readme",
   "dependencies": {
+    "date-fns": "^2.23.0",
     "discord.js": "^12.4.1",
     "lodash": "^4.17.21",
+    "parse-duration": "^1.0.0",
     "uuid": "^8.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "^16.7.10",
+    "@types/ws": "^7.4.7",
+    "typescript": "^4.4.2"
   }
 }

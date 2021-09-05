@@ -2,26 +2,26 @@
     misc.js
     Contains useful miscellaneous functions used throughout the bot.
 */
-const fs = require('fs');
+import { readFileSync } from "fs";
 const request = null;
-const destDms = 'dms';
-const destAny = 'anywhere';
+const destDms = "dms";
+const destAny = "anywhere";
 var uuid;
-var _ = require('lodash');
+import { isNil } from "lodash";
 try {
-  uuid = require('uuid/v4');
+  uuid = require("uuid/v4");
 } catch {
-  uuid = require('uuid');
+  uuid = require("uuid");
 }
 
-const ids = JSON.parse(fs.readFileSync('./info/ids.json', 'utf8'));
+const ids = JSON.parse(readFileSync("./info/ids.json", "utf8"));
 let mainGuild = null;
 
 // Moderator and staff roles
-let modRoles = JSON.parse(fs.readFileSync('./info/modRoles.json', 'utf8'));
+let modRoles = JSON.parse(readFileSync("./info/modRoles.json", "utf8"));
 
 // Bot reply emojis
-let botReplies = JSON.parse(fs.readFileSync('./info/botReplies.json', 'utf8'));
+let botReplies = JSON.parse(readFileSync("./info/botReplies.json", "utf8"));
 
 function delay(t) {
   return new Promise(function (resolve) {
@@ -38,8 +38,8 @@ function memberIsMod(member) {
 }
 
 function memberHasRole(member, role) {
-  if (_.isNil(member) || _.isNil(member.roles)) {
-    return false
+  if (isNil(member) || isNil(member.roles)) {
+    return false;
   }
   return member.roles.cache.some((roles) => roles.id === role);
 }
@@ -53,12 +53,17 @@ async function botReply(message, DiscordBot) {
 }
 
 async function sendToDestination(message, destination, text, warn = false) {
-  if (_.isNil(destination) || destination === 0 || _.isNil(message.guild) || memberIsMod(message.member)) {
+  if (
+    isNil(destination) ||
+    destination === 0 ||
+    isNil(message.guild) ||
+    memberIsMod(message.member)
+  ) {
     return await message.channel.send(text);
   } else if (destination === destDms) {
-    let msg = text
+    let msg = text;
     if (warn) {
-      msg = `*${message.author} please run this in your dms next time.*\n${text}`
+      msg = `*${message.author} please run this in your dms next time.*\n${text}`;
     }
     try {
       await message.author.send(msg);
@@ -67,18 +72,19 @@ async function sendToDestination(message, destination, text, warn = false) {
       return await message.channel.send(msg);
     }
   } else {
-
-    channel = message.guild.channels.cache.get(destination)
-    if (_.isNil(channel) || channel.id === message.channel.id) {
+    channel = message.guild.channels.cache.get(destination);
+    if (isNil(channel) || channel.id === message.channel.id) {
       return await message.channel.send(text);
     }
 
     if (warn) {
-      await channel.send(`*${message.author} please run this in ${channel} next time.*\n${text}`);
+      await channel.send(
+        `*${message.author} please run this in ${channel} next time.*\n${text}`
+      );
     } else {
       return await channel.send(text);
     }
-    return await message.delete()
+    return await message.delete();
   }
 }
 
@@ -96,22 +102,32 @@ function attachIsImage(msgAttach) {
   let url = msgAttach.url;
   //True if this url is a PNG or JPG image. Kind of hacky to ignore case
   return (
-    url.indexOf('png', url.length - 'png'.length) != -1 ||
-    url.indexOf('jpg', url.length - 'jpg'.length) != -1 ||
-    url.indexOf('jpeg', url.length - 'jpeg'.length) != -1 ||
-    url.indexOf('PNG', url.length - 'PNG'.length) != -1 ||
-    url.indexOf('JPG', url.length - 'JPG'.length) != -1 ||
-    url.indexOf('JPEG', url.length - 'JPEG'.length) != -1
+    url.indexOf("png", url.length - "png".length) != -1 ||
+    url.indexOf("jpg", url.length - "jpg".length) != -1 ||
+    url.indexOf("jpeg", url.length - "jpeg".length) != -1 ||
+    url.indexOf("PNG", url.length - "PNG".length) != -1 ||
+    url.indexOf("JPG", url.length - "JPG".length) != -1 ||
+    url.indexOf("JPEG", url.length - "JPEG".length) != -1
   );
 }
 
-module.exports.delay = delay;
-module.exports.memberIsMod = memberIsMod;
-module.exports.memberHasRole = memberHasRole;
-module.exports.ids = ids;
-module.exports.botReply = botReply;
-module.exports.mainGuild = mainGuild;
-module.exports.fakeBan = fakeBan;
-module.exports.sendToDestination = sendToDestination;
-module.exports.destDms = destDms;
-module.exports.destAny = destAny;
+const _delay = delay;
+export { _delay as delay };
+const _memberIsMod = memberIsMod;
+export { _memberIsMod as memberIsMod };
+const _memberHasRole = memberHasRole;
+export { _memberHasRole as memberHasRole };
+const _ids = ids;
+export { _ids as ids };
+const _botReply = botReply;
+export { _botReply as botReply };
+const _mainGuild = mainGuild;
+export { _mainGuild as mainGuild };
+const _fakeBan = fakeBan;
+export { _fakeBan as fakeBan };
+const _sendToDestination = sendToDestination;
+export { _sendToDestination as sendToDestination };
+const _destDms = destDms;
+export { _destDms as destDms };
+const _destAny = destAny;
+export { _destAny as destAny };

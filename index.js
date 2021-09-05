@@ -4,39 +4,48 @@
 */
 
 // Node imports
-const fs = require('fs');
-const Discord = require('discord.js');
+import { readFileSync } from "fs";
+import { Client, Intents } from "discord.js";
 
 // Run configuration
-const config = require('./src/config.js');
-config.configure();
+import { configure } from "./src/config.js";
+configure();
 
 // Local imports
-const misc = require('./src/misc.js');
-const blacklist = require('./src/blacklist.js');
-const commands = require('./src/commands.js');
-const reaction = require('./src/reaction.js');
-const emojiCharacters = require('./src/emojiCharacters.js');
+import {
+  mainGuild as _mainGuild,
+  memberIsMod,
+  fakeBan,
+  botReply,
+  attachIsImage,
+} from "./src/misc.js";
+import {
+  handleBlacklistCommands,
+  handleBlacklist,
+  handleBlacklistPotential,
+} from "./src/blacklist.js";
+import { modCommands, userCommands } from "./src/commands.js";
+import { handleReactionAdd, handleReactionRemove } from "./src/reaction.js";
+import emojiCharacters from "./src/emojiCharacters.js";
 
 // Read in bot's Discord token
-const discordToken = fs
-  .readFileSync('./info/discordToken.txt', 'utf8')
-  .replace('\n', '');
+const discordToken = readFileSync("./info/discordToken.txt", "utf8").replace(
+  "\n",
+  ""
+);
 
 // Read in IDs from the ID file
-const ids = JSON.parse(fs.readFileSync('./info/ids.json', 'utf8'));
+const ids = JSON.parse(readFileSync("./info/ids.json", "utf8"));
 
 // Spambot detection
-let spambots = JSON.parse(fs.readFileSync('./info/spam.json', 'utf8'));
+let spambots = JSON.parse(readFileSync("./info/spam.json", "utf8"));
 
 // Auto assigned roles on new member join
-let memberRoles = JSON.parse(
-  fs.readFileSync('./info/memberRoles.json', 'utf8')
-);
+let memberRoles = JSON.parse(readFileSync("./info/memberRoles.json", "utf8"));
 
 // Intro messages
 let introMessages = JSON.parse(
-  fs.readFileSync('./info/introMessages.json', 'utf8')
+  readFileSync("./info/introMessages.json", "utf8")
 );
 
 // Instance Data
@@ -45,61 +54,58 @@ let numMessages = 0;
 let mainGuild = null;
 
 // Create the bot
-const TeddyBot = new Discord.Client({
-  ws: {intents: new Discord.Intents(Discord.Intents.ALL)},
-  partials: ['MESSAGE', 'CHANNEL', 'REACTION'],
+const TeddyBot = new Client({
+  ws: { intents: new Intents(Intents.ALL) },
+  partials: ["MESSAGE", "CHANNEL", "REACTION"],
 });
 
 // Log into Discord using /info/DiscordToken.txt
-console.log('Time to log in.');
+console.log("Time to log in.");
 TeddyBot.login(discordToken).catch(function (reason) {
   console.log(reason);
 });
 
 // Executed upon successful login
-TeddyBot.on('ready', async () => {
+TeddyBot.on("ready", async () => {
   mainGuild = TeddyBot.guilds.cache.get(ids.server);
-  misc.mainGuild = mainGuild;
+  _mainGuild = mainGuild;
   TeddyBot.setMaxListeners(0); // Ensure it responds to everything regardless of how busy the server gets
-  await TeddyBot.user.setActivity('Type !help for commands');
+  await TeddyBot.user.setActivity("Type !help for commands");
   console.log(`HitBoxBot is ready`);
 });
 
 // Executed upon a message being sent to any channel the bot can look at
-TeddyBot.on('message', async (message) => {
+TeddyBot.on("message", async (message) => {
   try {
     if (message.author.bot) return; //Ignore the bot's own messages
 
-    let args = message.content.toLowerCase().split(' ');
+    let args = message.content.toLowerCase().split(" ");
 
     // Mod specific handlers:
-    if (misc.memberIsMod(message.member)) {
-      await commands.modCommands(message, args);
-      await blacklist.handleBlacklistCommands(message, args);
-      await misc.fakeBan(message, TeddyBot.user);
+    if (memberIsMod(message.member)) {
+      await modCommands(message, args);
+      await handleBlacklistCommands(message, args);
+      await fakeBan(message, TeddyBot.user);
     }
 
     // Check all messages for userCommands
-    await commands.userCommands(message, args);
+    await userCommands(message, args);
 
     // If someone asks the bot a question, reply with a canned response
     if (
       message.mentions.has(TeddyBot.user) &&
-      message.content[message.content.length - 1] == '?'
+      message.content[message.content.length - 1] == "?"
     ) {
-      await misc.botReply(message, TeddyBot);
+      await botReply(message, TeddyBot);
     }
 
     // Check for responses in an image-only channel
-    if (
-      message.channel == ids.galleryChannel &&
-      !misc.memberIsMod(message.member)
-    ) {
-      console.log('New message posted in gallery');
+    if (message.channel == ids.galleryChannel && !memberIsMod(message.member)) {
+      console.log("New message posted in gallery");
       if (
         !(
           message.attachments.size > 0 &&
-          message.attachments.every(misc.attachIsImage)
+          message.attachments.every(attachIsImage)
         )
       ) {
         message.delete();
@@ -110,9 +116,9 @@ TeddyBot.on('message', async (message) => {
     }
 
     // Handle blacklist removals/warnings
-    let censored = await blacklist.handleBlacklist(message, TeddyBot.user.tag);
+    let censored = await handleBlacklist(message, TeddyBot.user.tag);
     if (!censored) {
-      await blacklist.handleBlacklistPotential(message, TeddyBot.user.tag);
+      await handleBlacklistPotential(message, TeddyBot.user.tag);
     }
   } catch (e) {
     console.error(e);
@@ -120,27 +126,27 @@ TeddyBot.on('message', async (message) => {
 });
 
 // Executed upon a reaction being added to a message in the cache
-TeddyBot.on('messageReactionAdd', async (messageReaction, user) => {
+TeddyBot.on("messageReactionAdd", async (messageReaction, user) => {
   try {
-    await reaction.handleReactionAdd(messageReaction, user, TeddyBot);
+    await handleReactionAdd(messageReaction, user, TeddyBot);
   } catch (e) {
     console.error(e);
   }
 });
 
 //Executed upon a reaction being removed from a message in the cache
-TeddyBot.on('messageReactionRemove', async (messageReaction, user) => {
+TeddyBot.on("messageReactionRemove", async (messageReaction, user) => {
   try {
-    await reaction.handleReactionRemove(messageReaction, user, TeddyBot);
+    await handleReactionRemove(messageReaction, user, TeddyBot);
   } catch (e) {
     console.error(e);
   }
 });
 
 // Executed upon a new user joining the server
-TeddyBot.on('guildMemberAdd', async (member) => {
+TeddyBot.on("guildMemberAdd", async (member) => {
   try {
-    console.log('New member joined: ' + member.displayName);
+    console.log("New member joined: " + member.displayName);
     let introductionsChannel = TeddyBot.channels.cache.get(
       ids.introductionsChannel
     );
@@ -153,10 +159,10 @@ TeddyBot.on('guildMemberAdd', async (member) => {
       if (member.displayName.toLowerCase().includes(spambots[i])) {
         console.log(`Kicking a spambot: ${member}`);
         member.send(
-          'Spambots are not welcome in this server. If you believe this was in error, remove the URL or spam phrase from your username before rejoining.'
+          "Spambots are not welcome in this server. If you believe this was in error, remove the URL or spam phrase from your username before rejoining."
         );
         spam = true;
-        await member.kick('Spambot eliminated');
+        await member.kick("Spambot eliminated");
       }
     }
 
@@ -174,9 +180,7 @@ TeddyBot.on('guildMemberAdd', async (member) => {
           );
         }
 
-        await introductionsChannel.send(
-          "For more info, type `!help` in here."
-        );
+        await introductionsChannel.send("For more info, type `!help` in here.");
 
         if (memberRoles.length > 0) {
           await introductionsChannel.send(
