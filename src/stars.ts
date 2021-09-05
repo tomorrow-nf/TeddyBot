@@ -59,7 +59,6 @@ const periodEnd = (cfg: Config) =>
 
 const rollover = (now: number, duration: Duration | undefined = undefined) => {
   const cfg = currentConfig;
-  console.log(duration);
   if (duration && duration != cfg.duration) {
     cfg.duration = get(duration, "seconds", 0) > 0 ? duration : undefined;
   }
@@ -88,13 +87,9 @@ export const handleReactionAdd = async (
   reaction: MessageReaction,
   user: User
 ) => {
-  console.log("wat");
-  console.log(reaction);
   if (reaction.partial) {
     await reaction.fetch();
   }
-  console.log("wat");
-  console.log(reaction);
   if (get(reaction, "emoji.id") != currentConfig.emoteId) return;
   if (get(reaction, "message.author.id") == user.id) return;
   if (!get(currentConfig, "duration")) return;
@@ -127,7 +122,6 @@ export const handleReactionRemove = async (
   if (reaction.partial) {
     await reaction.fetch();
   }
-  console.log(reaction);
   if (get(reaction, "emoji.id") != currentConfig.emoteId) return;
   if (get(reaction, "message.author.id") == user.id) return;
   if (!get(currentConfig, "duration")) return;
@@ -184,7 +178,6 @@ const sendStats = async (
     current ? currentConfig.current : currentConfig.previous,
     ["count"]
   );
-  console.log(counts);
   let stats = `***These are the ${
     current ? "current" : "previous"
   } top ${limit} star counts:***\n`;
@@ -207,7 +200,6 @@ export const handleCommand = async (
   message: Message,
   args: string[]
 ): Promise<boolean> => {
-  console.log(args);
   if (!memberIsMod(message.member)) return false;
   if (get(args, "[0]", "") != cmdName.toLowerCase()) return false;
   const cmd = get(args, "[1]", "");
