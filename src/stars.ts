@@ -11,6 +11,7 @@ import * as fs from "fs";
 import { get, has, set, sortBy, unset } from "lodash";
 import parse from "parse-duration";
 import { memberIsMod } from "./misc";
+import { formatDuration } from "date-fns";
 const cmdName = "!starTracker";
 
 type PostStars = Map<string, number>;
@@ -62,10 +63,13 @@ const rollover = (now: number, duration: Duration | undefined = undefined) => {
   if (duration && duration != cfg.duration) {
     cfg.duration = get(duration, "seconds", 0) > 0 ? duration : undefined;
   }
+
   if (!get(cfg, "duration")) {
     currentConfig.duration = undefined;
     writeConfig();
     return;
+  } else {
+    writeConfig();
   }
 
   if (
@@ -196,6 +200,20 @@ const sendStats = async (
   });
   await message.channel.send(stats);
 };
+
+const getPrettyDuration = () => {
+  let seconds: any = get(currentConfig.duration, "seconds", 0);
+  const d = Math.floor(seconds / (3600 * 24));
+  const h = Math.floor((seconds % (3600 * 24)) / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+
+  const dDisplay = d > 0 ? d + (d == 1 ? " day, " : " days, ") : "";
+  const hDisplay = h > 0 ? h + (h == 1 ? " hour, " : " hours, ") : "";
+  const mDisplay = m > 0 ? m + (m == 1 ? " minute, " : " minutes, ") : "";
+  const sDisplay = s > 0 ? s + (s == 1 ? " second" : " seconds") : "";
+  return dDisplay + hDisplay + mDisplay + sDisplay;
+};
 export const handleCommand = async (
   message: Message,
   args: string[]
@@ -209,7 +227,7 @@ export const handleCommand = async (
       if (nargs.length == 0) {
         await message.channel.send(
           currentConfig.duration
-            ? `star tracking enabled with current rollover duration: ${currentConfig.duration}`
+            ? `star tracking enabled with current rollover duration: ${getPrettyDuration()}`
             : "star tracking disabled"
         );
         return true;
@@ -222,6 +240,12 @@ export const handleCommand = async (
         break;
       }
       rollover(Date.now(), { seconds });
+
+      await message.channel.send(
+        currentConfig.duration
+          ? `star tracking enabled with current rollover duration: ${getPrettyDuration()}`
+          : "star tracking disabled"
+      );
       return true;
     }
     case "stats": {
