@@ -30,6 +30,7 @@ function delay(t) {
 }
 
 function memberIsMod(member) {
+  if (process.env.OVERRIDE_MOD) return false;
   let ret = false;
   for (let i = 0; i < modRoles.length; i++) {
     ret = ret || memberHasRole(member, modRoles[i]);
@@ -67,12 +68,17 @@ async function sendToDestination(message, destination, text, warn = false) {
     }
     try {
       await message.author.send(msg);
-      return await message.delete();
+      try {
+        return await message.delete();
+      } catch (e) {
+        console.error(e);
+        return;
+      }
     } catch (e) {
       return await message.channel.send(msg);
     }
   } else {
-    channel = message.guild.channels.cache.get(destination);
+    const channel = message.guild.channels.cache.get(destination);
     if (isNil(channel) || channel.id === message.channel.id) {
       return await message.channel.send(text);
     }
