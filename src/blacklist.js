@@ -91,7 +91,7 @@ async function handleBlacklist(message, DiscordBotTag) {
 		await message.delete();
 
 		try {
-			let warning = await message.author.send("Please refrain from using language like '" + censoredWord + "' on the Hit Box server.\n\n`" + message.content + "`");
+			let warning = await message.author.send("Please refrain from using language like '" + censoredWord + "' on the server.\n\n`" + message.content + "`");
 		} catch (e) {
 			let warning = await message.channel.send("<@" + message.author.id + ">, please refrain from using that language on this server.");
 		} 
